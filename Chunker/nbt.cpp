@@ -14,60 +14,54 @@ std::string parse_string(const std::vector<uint8_t> data, int& position) {
 }
 
 tag_ptr parse_tag_byte(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<uint8_t> tag;
 	tag.name = parse_string(data, position);
 	tag.value = data[position++];
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<uint8_t>>(tag);
 }
 
 tag_ptr parse_tag_short(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<uint16_t> tag;
 	tag.name = parse_string(data, position);
 	tag.value = (data[position] << 8) + data[position + 1];
 	position += 2;
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<uint16_t>>(tag);
 }
 
 tag_ptr parse_tag_int(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<uint32_t> tag;
 	tag.name = parse_string(data, position);
 	tag.value = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + (data[position + 3]);
 	position += 4;
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<uint32_t>>(tag);
 }
 
 tag_ptr parse_tag_long(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<uint64_t> tag;
 	tag.name = parse_string(data, position);
 	tag.value = (static_cast<uint64_t>(data[position]) << 56) + (static_cast<uint64_t>(data[position + 1]) << 48) + (static_cast<uint64_t>(data[position + 2]) << 40) + (static_cast<uint64_t>(data[position + 3]) << 32)
-		+ (static_cast<uint64_t>(data[position]) << 24) + (static_cast<uint64_t>(data[position + 1]) << 16) + (static_cast<uint64_t>(data[position + 2]) << 8) + static_cast<uint64_t>(data[position + 3]);
+		+ (static_cast<uint64_t>(data[position + 4]) << 24) + (static_cast<uint64_t>(data[position + 5]) << 16) + (static_cast<uint64_t>(data[position + 6]) << 8) + static_cast<uint64_t>(data[position + 7]);
 	position += 8;
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<uint64_t>>(tag);
 }
 
 tag_ptr parse_tag_float(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<float> tag;
 	tag.name = parse_string(data, position);
 	uint32_t tmp = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
 	tag.value = static_cast<float>(tmp);
 	position += 4;
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<float>>(tag);
 }
 
 tag_ptr parse_tag_double(const std::vector<uint8_t> data, int& position) {
-	position++;
 	tag<double> tag;
 	tag.name = parse_string(data, position);
 	uint64_t tmp = (static_cast<uint64_t>(data[position]) << 56) + (static_cast<uint64_t>(data[position + 1]) << 48) + (static_cast<uint64_t>(data[position + 2]) << 40) + (static_cast<uint64_t>(data[position + 3]) << 32)
-		+ (static_cast<uint64_t>(data[position]) << 24) + (static_cast<uint64_t>(data[position + 1]) << 16) + (static_cast<uint64_t>(data[position + 2]) << 8) + static_cast<uint64_t>(data[position + 3]);
+		+ (static_cast<uint64_t>(data[position + 4]) << 24) + (static_cast<uint64_t>(data[position + 5]) << 16) + (static_cast<uint64_t>(data[position + 6]) << 8) + static_cast<uint64_t>(data[position + 7]);
 	tag.value = static_cast<double>(tmp);
 	position += 8;
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<double>>(tag);
 }
 
 tag_ptr parse_tag_byte_array(const std::vector<uint8_t> data, int& position) {
@@ -77,37 +71,41 @@ tag_ptr parse_tag_byte_array(const std::vector<uint8_t> data, int& position) {
 	tag.name = parse_string(data, position);
 	for (unsigned int i = 0; i < length; i++)
 		tag.data.push_back(data[position++]);
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<tag_byte_array>(tag);
 }
 
 tag_ptr parse_tag_string(const std::vector<uint8_t> data, int& position) {
 	tag<std::string> tag;
 	tag.name = parse_string(data, position);
 	tag.value = parse_string(data, position);
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<nbt::tag<std::string>>(tag);
 }
 
+// TODO: Bug here - when parsing a tag_list, there is no named tags, so somehow we have to suppress
+// attempting to read the tag name while processing a list.
 tag_ptr parse_tag_list(const std::vector<uint8_t> data, int& position) {
 	tag_list tag;
 	tag.name = parse_string(data, position);
 	uint8_t list_tag_type = data[position++];
 	uint32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
 	position += 4;
-	tag.name = parse_string(data, position);
 	for (unsigned int i = 0; i < length; i++)
 		tag.items.push_back(dispatch_parse(data, position, list_tag_type));
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<tag_list>(tag);
 }
 
 tag_ptr parse_tag_compound(const std::vector<uint8_t> data, int& position) {
 	tag_compound tag;
 	tag.name = parse_string(data, position);
 
-	uint8_t next_tag_type = data[position++];
-	if (next_tag_type != 0) // not at end of compound tag
-		tag.items.push_back(dispatch_parse(data, position, next_tag_type));
+	uint8_t next_tag_type = 0;
+	do {
+		next_tag_type = data[position++];
+		if (next_tag_type != 0) // not at end of compound tag
+			tag.items.push_back(dispatch_parse(data, position, next_tag_type));
+	} while (next_tag_type != 0);
 
-	return std::make_shared<tag_base>(tag);
+	return std::make_shared<tag_compound>(tag);
 }
 
 tag_ptr dispatch_parse(const std::vector<uint8_t> data, int& position, const uint8_t tag_type) {
