@@ -69,9 +69,11 @@
   <ItemGroup>
     <ClCompile Include="chunk_loader.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="nbt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chunk_loader.h" />
+    <ClInclude Include="nbt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

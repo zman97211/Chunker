@@ -21,9 +21,15 @@
     <ClCompile Include="chunk_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="nbt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chunk_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nbt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
