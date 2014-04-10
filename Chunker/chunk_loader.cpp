@@ -1,4 +1,5 @@
 #include "chunk_loader.h"
+#include "zlib.h"
 #include <boost/filesystem.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
@@ -16,6 +17,29 @@ namespace chunk {
 			boost::filesystem::path dir{ "region" };
 			boost::filesystem::path region{ (boost::format("r.%1%.%2%.mca") % x % y).str() };
 			return base / dir / region;
+		}
+
+		std::vector<uint8_t> decompress (std::vector<uint8_t> comp) {
+			uint32_t buffer_size = 1024 * 1024; // 1 meg, I think this should be sufficient? Kludge.
+			std::vector<uint8_t> buffer(buffer_size);
+			int z_result = uncompress(reinterpret_cast<Bytef*>(&buffer[0]), reinterpret_cast<uLongf*>(&buffer_size), reinterpret_cast<Bytef*>(&comp[0]), comp.size());
+
+			switch (z_result) {
+			case Z_OK:
+				break;
+			case Z_MEM_ERROR:
+				throw std::runtime_error{ "Out of memory trying to decompress chunk." };
+				break;
+			case Z_BUF_ERROR:
+				throw std::runtime_error{ "Uncompressed chunk data was over 1 meg limit." };
+				break;
+			default:
+				throw std::runtime_error{ "Unknown error while decompressing chunk data." };
+				break;
+			}
+
+			buffer.shrink_to_fit();
+			return buffer;
 		}
 	}
 
@@ -62,6 +86,8 @@ namespace chunk {
 		std::vector<uint8_t> result(length); // Initialize with length number of elements.
 		region.read(reinterpret_cast<char*>(&result[0]), length);
 
-		return result;
+		std::vector<uint8_t> uncompressed = imp::decompress(result);
+
+		return uncompressed;
 	}
 }
