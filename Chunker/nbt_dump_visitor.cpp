@@ -15,22 +15,22 @@ void nbt_dump_visitor::visit(tag_end* tag) {
 	std::cout << "tag_end" << std::endl;
 }
 
-void nbt_dump_visitor::visit(tag<uint8_t>* tag) {
+void nbt_dump_visitor::visit(tag<int8_t>* tag) {
 	indent();
 	std::cout << "tag_byte: '" << tag->name << "' == " << tag->value << std::endl;
 }
 
-void nbt_dump_visitor::visit(tag<uint16_t>* tag) {
+void nbt_dump_visitor::visit(tag<int16_t>* tag) {
 	indent();
 	std::cout << "tag_short: '" << tag->name << "' == " << tag->value << std::endl;
 }
 
-void nbt_dump_visitor::visit(tag<uint32_t>* tag) {
+void nbt_dump_visitor::visit(tag<int32_t>* tag) {
 	indent();
 	std::cout << "tag_int: '" << tag->name << "' == " << tag->value << std::endl;
 }
 
-void nbt_dump_visitor::visit(tag<uint64_t>* tag) {
+void nbt_dump_visitor::visit(tag<int64_t>* tag) {
 	indent();
 	std::cout << "tag_long: '" << tag->name << "' == " << tag->value << std::endl;
 }
@@ -49,7 +49,7 @@ void nbt_dump_visitor::visit(tag_byte_array* tag) {
 	indent();
 	std::cout << "tag_byte_array: '" << tag->name << "' (size == " << tag->data.size() << "): ";
 	for (auto b : tag->data)
-		std::cout << boost::format("%02X ") % b;
+		std::cout << (int)b << " ";
 	std::cout << std::endl;
 }
 

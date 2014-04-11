@@ -14,39 +14,39 @@ std::string parse_string(const std::vector<uint8_t> data, int& position) {
 }
 
 tag_ptr parse_tag_byte(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
-	tag<uint8_t> tag;
+	tag<int8_t> tag;
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
 	tag.value = data[position++];
-	return std::make_shared<nbt::tag<uint8_t>>(tag);
+	return std::make_shared<nbt::tag<int8_t>>(tag);
 }
 
 tag_ptr parse_tag_short(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
-	tag<uint16_t> tag;
+	tag<int16_t> tag;
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
 	tag.value = (data[position] << 8) + data[position + 1];
 	position += 2;
-	return std::make_shared<nbt::tag<uint16_t>>(tag);
+	return std::make_shared<nbt::tag<int16_t>>(tag);
 }
 
 tag_ptr parse_tag_int(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
-	tag<uint32_t> tag;
+	tag<int32_t> tag;
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
 	tag.value = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + (data[position + 3]);
 	position += 4;
-	return std::make_shared<nbt::tag<uint32_t>>(tag);
+	return std::make_shared<nbt::tag<int32_t>>(tag);
 }
 
 tag_ptr parse_tag_long(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
-	tag<uint64_t> tag;
+	tag<int64_t> tag;
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
-	tag.value = (static_cast<uint64_t>(data[position]) << 56) + (static_cast<uint64_t>(data[position + 1]) << 48) + (static_cast<uint64_t>(data[position + 2]) << 40) + (static_cast<uint64_t>(data[position + 3]) << 32)
-		+ (static_cast<uint64_t>(data[position + 4]) << 24) + (static_cast<uint64_t>(data[position + 5]) << 16) + (static_cast<uint64_t>(data[position + 6]) << 8) + static_cast<uint64_t>(data[position + 7]);
+	tag.value = (static_cast<int64_t>(data[position]) << 56) + (static_cast<int64_t>(data[position + 1]) << 48) + (static_cast<int64_t>(data[position + 2]) << 40) + (static_cast<int64_t>(data[position + 3]) << 32)
+		+ (static_cast<int64_t>(data[position + 4]) << 24) + (static_cast<int64_t>(data[position + 5]) << 16) + (static_cast<int64_t>(data[position + 6]) << 8) + static_cast<int64_t>(data[position + 7]);
 	position += 8;
-	return std::make_shared<nbt::tag<uint64_t>>(tag);
+	return std::make_shared<nbt::tag<int64_t>>(tag);
 }
 
 tag_ptr parse_tag_float(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
@@ -54,7 +54,7 @@ tag_ptr parse_tag_float(const std::vector<uint8_t> data, int& position, bool sup
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
 	uint32_t tmp = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
-	tag.value = static_cast<float>(tmp);
+	tag.value = *reinterpret_cast<float*>(&tmp);
 	position += 4;
 	return std::make_shared<nbt::tag<float>>(tag);
 }
@@ -66,7 +66,7 @@ tag_ptr parse_tag_double(const std::vector<uint8_t> data, int& position, bool su
 
 	uint64_t tmp = (static_cast<uint64_t>(data[position]) << 56) + (static_cast<uint64_t>(data[position + 1]) << 48) + (static_cast<uint64_t>(data[position + 2]) << 40) + (static_cast<uint64_t>(data[position + 3]) << 32)
 		+ (static_cast<uint64_t>(data[position + 4]) << 24) + (static_cast<uint64_t>(data[position + 5]) << 16) + (static_cast<uint64_t>(data[position + 6]) << 8) + static_cast<uint64_t>(data[position + 7]);
-	tag.value = static_cast<double>(tmp);
+	tag.value = *reinterpret_cast<double*>(&tmp);
 
 	position += 8;
 	return std::make_shared<nbt::tag<double>>(tag);
@@ -76,9 +76,9 @@ tag_ptr parse_tag_byte_array(const std::vector<uint8_t> data, int& position, boo
 	tag_byte_array tag;
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
-	uint32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
+	int32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
 	position += 4;
-	for (unsigned int i = 0; i < length; i++)
+	for (int i = 0; i < length; i++)
 		tag.data.push_back(data[position++]);
 	return std::make_shared<tag_byte_array>(tag);
 }
@@ -96,9 +96,9 @@ tag_ptr parse_tag_list(const std::vector<uint8_t> data, int& position, bool supp
 	if (!suppress_name)
 		tag.name = parse_string(data, position);
 	uint8_t list_tag_type = data[position++];
-	uint32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
+	int32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
 	position += 4;
-	for (unsigned int i = 0; i < length; i++)
+	for (int i = 0; i < length; i++)
 		tag.items.push_back(dispatch_parse(data, position, list_tag_type, true));
 	return std::make_shared<tag_list>(tag);
 }

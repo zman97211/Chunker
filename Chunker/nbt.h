@@ -33,7 +33,7 @@ namespace nbt {
 	};
 
 	struct tag_byte_array : public tag_base {
-		std::vector<uint8_t> data;
+		std::vector<int8_t> data;
 		void accept(tag_visitor* v);
 	};
 
@@ -48,10 +48,10 @@ namespace nbt {
 	class tag_visitor {
 	public:
 		virtual void visit(tag_end* tag) = 0;
-		virtual void visit(tag<uint8_t>* tag) = 0;
-		virtual void visit(tag<uint16_t>* tag) = 0;
-		virtual void visit(tag<uint32_t>* tag) = 0;
-		virtual void visit(tag<uint64_t>* tag) = 0;
+		virtual void visit(tag<int8_t>* tag) = 0;
+		virtual void visit(tag<int16_t>* tag) = 0;
+		virtual void visit(tag<int32_t>* tag) = 0;
+		virtual void visit(tag<int64_t>* tag) = 0;
 		virtual void visit(tag<float>* tag) = 0;
 		virtual void visit(tag<double>* tag) = 0;
 		virtual void visit(tag_byte_array* tag) = 0;
