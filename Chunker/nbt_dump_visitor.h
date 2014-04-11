@@ -14,6 +14,7 @@ namespace nbt {
 		void visit(tag<float>* tag);
 		void visit(tag<double>* tag);
 		void visit(tag_byte_array* tag);
+		void visit(tag_int_array* tag);
 		void visit(tag<std::string>* tag);
 		void visit(tag_list* tag);
 		void visit(tag_compound* tag);

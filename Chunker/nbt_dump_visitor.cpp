@@ -53,6 +53,14 @@ void nbt_dump_visitor::visit(tag_byte_array* tag) {
 	std::cout << std::endl;
 }
 
+void nbt_dump_visitor::visit(tag_int_array* tag) {
+	indent();
+	std::cout << "tag_int_array: '" << tag->name << "' (size == " << tag->data.size() << "): ";
+	for (auto b : tag->data)
+		std::cout << (int)b << " ";
+	std::cout << std::endl;
+}
+
 void nbt_dump_visitor::visit(tag<std::string>* tag) {
 	indent();
 	std::cout << "tag_string: '" << tag->name << "' == '" << tag->value << "'" << std::endl;

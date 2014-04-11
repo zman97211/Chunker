@@ -37,6 +37,11 @@ namespace nbt {
 		void accept(tag_visitor* v);
 	};
 
+	struct tag_int_array : public tag_base {
+		std::vector<int32_t> data;
+		void accept(tag_visitor* v);
+	};
+
 	struct tag_compound : public tag_base {
 		std::vector<tag_ptr> items;
 		void accept(tag_visitor* v);
@@ -55,6 +60,7 @@ namespace nbt {
 		virtual void visit(tag<float>* tag) = 0;
 		virtual void visit(tag<double>* tag) = 0;
 		virtual void visit(tag_byte_array* tag) = 0;
+		virtual void visit(tag_int_array* tag) = 0;
 		virtual void visit(tag<std::string>* tag) = 0;
 		virtual void visit(tag_list* tag) = 0;
 		virtual void visit(tag_compound* tag) = 0;

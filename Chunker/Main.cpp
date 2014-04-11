@@ -24,7 +24,7 @@ nbt::tag_ptr get_test_nbt() {
 
 int main(int argc, char* argv[]) {
 	try {
-		auto nbt_data = get_test_nbt();
+		auto nbt_data = get_a_real_chunk();
 		nbt::nbt_dump_visitor v;
 		nbt_data->accept(&v);
 	}

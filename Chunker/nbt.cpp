@@ -83,6 +83,20 @@ tag_ptr parse_tag_byte_array(const std::vector<uint8_t> data, int& position, boo
 	return std::make_shared<tag_byte_array>(tag);
 }
 
+tag_ptr parse_tag_int_array(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
+	tag_int_array tag;
+	if (!suppress_name)
+		tag.name = parse_string(data, position);
+	int32_t length = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + data[position + 3];
+	position += 4;
+	for (int i = 0; i < length; i++) {
+		int32_t value = (data[position] << 24) + (data[position + 1] << 16) + (data[position + 2] << 8) + (data[position + 3]);
+		tag.data.push_back(value);
+		position += 4;
+	}
+	return std::make_shared<tag_int_array>(tag);
+}
+
 tag_ptr parse_tag_string(const std::vector<uint8_t> data, int& position, bool suppress_name = false) {
 	tag<std::string> tag;
 	if (!suppress_name)
@@ -153,6 +167,9 @@ tag_ptr dispatch_parse(const std::vector<uint8_t> data, int& position, const uin
 	case 10:
 		return parse_tag_compound(data, position, suppress_name);
 		break;
+	case 11:
+		return parse_tag_int_array(data, position, suppress_name);
+		break;
 	default:
 		throw std::runtime_error{ "Encountered an unknown NBT tag type." };
 		break;
@@ -177,6 +194,10 @@ void nbt::tag<T>::accept(tag_visitor* v) {
 }
 
 void nbt::tag_byte_array::accept(tag_visitor* v) {
+	v->visit(this);
+}
+
+void nbt::tag_int_array::accept(tag_visitor* v) {
 	v->visit(this);
 }
 
