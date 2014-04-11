@@ -17,7 +17,7 @@ void nbt_dump_visitor::visit(tag_end* tag) {
 
 void nbt_dump_visitor::visit(tag<int8_t>* tag) {
 	indent();
-	std::cout << "tag_byte: '" << tag->name << "' == " << tag->value << std::endl;
+	std::cout << "tag_byte: '" << tag->name << "' == " << (int)tag->value << std::endl;
 }
 
 void nbt_dump_visitor::visit(tag<int16_t>* tag) {
